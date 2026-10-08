@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% block title %}RollCall - Student Attendance Registration{% endblock %}
+
+{% block content %}
+<div class="flex-grow flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full">
+        
+        <!-- Header with Academic & Tech Visual Accents -->
+        <div class="text-center mb-6">
+            <div class="inline-flex items-center justify-center gap-3 mb-4">
+                <!-- Laptop Badge -->
+                <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shadow-lg shadow-indigo-500/10 hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-laptop-code text-xl"></i>
+                </div>
+                <!-- Central Check Badge -->
+                <div class="w-16 h-16 rounded-3xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 text-white flex items-center justify-center shadow-xl shadow-indigo-600/40 ring-4 ring-indigo-500/20">
+                    <i class="fa-solid fa-user-check text-2xl"></i>
+                </div>
+                <!-- Book Badge -->
+                <div class="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 shadow-lg shadow-purple-500/10 hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-book text-xl"></i>
+                </div>
+            </div>
+
+            <h1 class="text-3xl font-extrabold text-white tracking-tight">Student Attendance</h1>
+            <p class="text-sm text-slate-400 mt-1">Please enter your student details and today's session passcode.</p>
+        </div>
+
+        <!-- Form Card (Cyber Glassmorphism) -->
+        <div class="cyber-glass rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+            <!-- Subtle accent top line -->
+            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-cyan-400 to-purple-500"></div>
+
+            <form action="{{ url_for('submit_attendance') }}" method="POST" class="space-y-4" id="attendanceForm">
+                
+                <!-- Student Name -->
+                <div>
+                    <label for="student_name" class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-2">
+                        <i class="fa-regular fa-user text-indigo-400"></i>
+                        <span>Full Name</span>
+                    </label>
+                    <input type="text" id="student_name" name="student_name" required placeholder="e.g. Muhammad Fauzi"
+                           class="w-full px-4 py-3 bg-slate-900/90 border border-slate-700/80 rounded-xl text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-inner">
+                </div>
+
+                <!-- Class & Semester Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Class -->
+                    <div>
+                        <label for="class_name" class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-2">
+                            <i class="fa-solid fa-graduation-cap text-indigo-400"></i>
+                            <span>Class</span>
+                        </label>
+                        <input type="text" id="class_name" name="class_name" required placeholder="e.g. DIT4A"
+                               class="w-full px-4 py-3 bg-slate-900/90 border border-slate-700/80 rounded-xl text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-inner">
+                    </div>
+
+                    <!-- Semester -->
+                    <div>
+                        <label for="semester" class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-2">
+                            <i class="fa-solid fa-layer-group text-indigo-400"></i>
+                            <span>Semester</span>
+                        </label>
+                        <select id="semester" name="semester" required
+                                class="w-full px-4 py-3 bg-slate-900/90 border border-slate-700/80 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-inner">
+                            <option value="" disabled selected class="bg-slate-900 text-slate-400">Select Semester</option>
+                            <option value="Sem 1" class="bg-slate-900">Semester 1</option>
+                            <option value="Sem 2" class="bg-slate-900">Semester 2</option>
+                            <option value="Sem 3" class="bg-slate-900">Semester 3</option>
+                            <option value="Sem 4" class="bg-slate-900">Semester 4</option>
+                            <option value="Sem 5" class="bg-slate-900">Semester 5</option>
+                            <option value="Sem 6" class="bg-slate-900">Semester 6</option>
+                            <option value="Sem 7" class="bg-slate-900">Semester 7</option>
+                            <option value="Sem 8" class="bg-slate-900">Semester 8</option>
+                            <option value="Other" class="bg-slate-900">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Today's Date -->
+                <div>
+                    <label for="attendance_date" class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-2">
+                        <i class="fa-regular fa-calendar-days text-indigo-400"></i>
+                        <span>Today's Date</span>
+                    </label>
+                    <input type="date" id="attendance_date" name="attendance_date" value="{{ today_date }}" readonly
+                           class="w-full px-4 py-3 bg-slate-900/50 border border-slate-800 rounded-xl text-slate-400 font-mono text-sm cursor-not-allowed">
+                </div>
+
+                <!-- Daily Passcode Input -->
+                <div class="pt-2">
+                    <label for="passcode" class="block text-xs font-bold uppercase tracking-wider text-indigo-300 mb-1.5 flex items-center justify-between">
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-key text-indigo-400"></i>
+                            <span>Daily Passcode</span>
+                        </span>
+                        <span class="text-[11px] font-medium text-slate-400 normal-case flex items-center gap-1">
+                            <i class="fa-solid fa-chalkboard-user text-xs"></i> From Instructor
+                        </span>
+                    </label>
+                    <div class="relative">
+                        <input type="text" id="passcode" name="passcode" required maxlength="15" autocomplete="off"
+                               placeholder="e.g. z123"
+                               class="w-full px-4 py-3.5 bg-indigo-950/40 border-2 border-indigo-500/40 rounded-xl text-amber-300 font-mono text-lg font-bold tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all text-center placeholder:normal-case placeholder:tracking-normal placeholder:font-sans placeholder:text-slate-600 shadow-lg shadow-indigo-950/50">
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1.5 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-info text-indigo-400"></i>
+                        <span>Passcode is shown on instructor projector / classroom screen.</span>
+                    </p>
+                </div>
+
+                <!-- Live Selfie / Verification Photo Capture -->
+                <div class="pt-2">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center justify-between">
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-camera text-indigo-400"></i>
+                            <span>Student Photo / Selfie</span>
+                        </span>
+                        <span class="text-[11px] font-medium text-indigo-300 flex items-center gap-1" id="photoStatusLabel">
+                            <i class="fa-solid fa-shield-halved text-cyan-400"></i> Optional Verification
+                        </span>
+                    </label>
+
+                    <div class="p-3.5 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-center relative overflow-hidden space-y-3">
+                        <!-- Live Video Stream Area -->
+                        <div id="cameraStreamContainer" class="hidden relative rounded-xl overflow-hidden bg-black border border-indigo-500/40">
+                            <video id="webcamVideo" autoplay playsinline class="w-full h-44 object-cover rounded-xl"></video>
+                            <button type="button" id="snapPhotoBtn" class="absolute bottom-2.5 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-gradient-to-r from-indigo-600 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white font-bold text-xs rounded-xl shadow-lg border border-white/20 flex items-center gap-2">
+                                <i class="fa-solid fa-camera-retro"></i>
+                                <span>Snap Photo</span>
+                            </button>
+                        </div>
+
+                        <!-- Photo Preview Area -->
+                        <div id="photoPreviewContainer" class="hidden relative">
+                            <img id="photoPreviewImg" src="" alt="Captured Selfie" class="w-24 h-24 object-cover rounded-2xl border-2 border-emerald-400 shadow-lg mx-auto">
+                            <p class="text-[11px] text-emerald-400 font-bold mt-1.5 flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-circle-check"></i> Photo Attached
+                            </p>
+                            <button type="button" id="retakePhotoBtn" class="mt-1 px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg border border-slate-600 inline-flex items-center gap-1.5">
+                                <i class="fa-solid fa-rotate-left text-amber-400"></i>
+                                <span>Retake Photo</span>
+                            </button>
+                        </div>
+
+                        <!-- Camera / Upload Trigger Buttons -->
+                        <div id="cameraActionButtons" class="flex flex-col sm:flex-row gap-2 justify-center">
+                            <button type="button" id="openCameraBtn" class="py-2.5 px-3.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-xs font-bold rounded-xl border border-indigo-500/30 transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-camera"></i>
+                                <span>Take Live Selfie</span>
+                            </button>
+                            <label for="cameraFileInput" class="py-2.5 px-3.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl border border-slate-600 transition-all cursor-pointer flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-upload text-cyan-400"></i>
+                                <span>Upload Photo File</span>
+                            </label>
+                            <input type="file" id="cameraFileInput" accept="image/*" capture="user" class="hidden">
+                        </div>
+                    </div>
+
+                    <!-- Hidden input to hold Base64 data -->
+                    <input type="hidden" name="photo" id="photoData">
+                    <canvas id="photoCanvas" class="hidden"></canvas>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-3">
+                    <button type="submit" id="submitBtn"
+                            class="w-full py-4 px-4 bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white font-extrabold rounded-xl shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 transform hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 border border-indigo-400/30 text-sm uppercase tracking-wider">
+                        <i class="fa-solid fa-paper-plane text-sm"></i>
+                        <span>Submit Attendance</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="mt-6 text-center space-y-2">
+            <p class="text-xs text-slate-400 flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-shield-halved text-emerald-400"></i>
+                <span>Anti-duplicate submission system active.</span>
+            </p>
+            <div class="pt-2">
+                <a href="{{ url_for('absence') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900/80 hover:bg-slate-800 border border-amber-500/30 text-amber-400 rounded-xl text-xs font-semibold transition-all">
+                    <i class="fa-solid fa-file-signature text-amber-400"></i>
+                    <span>Unable to attend today? Submit Absence Justification &rarr;</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Form submission animation
+    const form = document.getElementById('attendanceForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (form && submitBtn) {
+        form.addEventListener('submit', function() {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Recording Attendance...</span>
+            `;
+        });
+    }
+
+    // Camera Capture & Selfie Logic
+    const openCameraBtn = document.getElementById('openCameraBtn');
+    const snapPhotoBtn = document.getElementById('snapPhotoBtn');
+    const retakePhotoBtn = document.getElementById('retakePhotoBtn');
+    const cameraFileInput = document.getElementById('cameraFileInput');
+    const webcamVideo = document.getElementById('webcamVideo');
+    const photoCanvas = document.getElementById('photoCanvas');
+    const photoData = document.getElementById('photoData');
+    const photoPreviewImg = document.getElementById('photoPreviewImg');
+    const cameraStreamContainer = document.getElementById('cameraStreamContainer');
+    const photoPreviewContainer = document.getElementById('photoPreviewContainer');
+    const cameraActionButtons = document.getElementById('cameraActionButtons');
+    let videoStream = null;
+
+    // Helper: compress image file to Base64
+    function compressAndSetImage(dataUrl) {
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const maxDimension = 400; // Optimal size for fast upload & database storage
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+                if (width > maxDimension) {
+                    height *= maxDimension / width;
+                    width = maxDimension;
+                }
+            } else {
+                if (height > maxDimension) {
+                    width *= maxDimension / height;
+                    height = maxDimension;
+                }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+            photoData.value = compressedBase64;
+            photoPreviewImg.src = compressedBase64;
+
+            // Show preview
+            if (cameraStreamContainer) cameraStreamContainer.classList.add('hidden');
+            if (cameraActionButtons) cameraActionButtons.classList.add('hidden');
+            if (photoPreviewContainer) photoPreviewContainer.classList.remove('hidden');
+
+            // Stop camera if active
+            stopCamera();
+        };
+        img.src = dataUrl;
+    }
+
+    // Start Webcam
+    if (openCameraBtn) {
+        openCameraBtn.addEventListener('click', async function() {
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+                    audio: false
+                });
+                webcamVideo.srcObject = videoStream;
+                cameraStreamContainer.classList.remove('hidden');
+                cameraActionButtons.classList.add('hidden');
+            } catch (err) {
+                alert('Camera access unavailable. You can upload or snap a photo directly using the "Upload Photo File" button.');
+                cameraFileInput.click();
+            }
+        });
+    }
+
+    // Snap photo from Webcam
+    if (snapPhotoBtn) {
+        snapPhotoBtn.addEventListener('click', function() {
+            if (!videoStream) return;
+            photoCanvas.width = webcamVideo.videoWidth || 640;
+            photoCanvas.height = webcamVideo.videoHeight || 480;
+            const ctx = photoCanvas.getContext('2d');
+            ctx.drawImage(webcamVideo, 0, 0, photoCanvas.width, photoCanvas.height);
+            const rawData = photoCanvas.toDataURL('image/jpeg', 0.9);
+            compressAndSetImage(rawData);
+        });
+    }
+
+    // File input fallback
+    if (cameraFileInput) {
+        cameraFileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    compressAndSetImage(event.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // Retake Photo
+    function stopCamera() {
+        if (videoStream) {
+            videoStream.getTracks().forEach(track => track.stop());
+            videoStream = null;
+        }
+    }
+
+    if (retakePhotoBtn) {
+        retakePhotoBtn.addEventListener('click', function() {
+            photoData.value = '';
+            photoPreviewImg.src = '';
+            photoPreviewContainer.classList.add('hidden');
+            cameraStreamContainer.classList.add('hidden');
+            cameraActionButtons.classList.remove('hidden');
+            stopCamera();
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,497 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - RollCall{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+    
+    <!-- Top Bar / Welcome & Quick Actions -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+        <div>
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+                    <i class="fa-solid fa-gauge-high"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Instructor Control Dashboard</h1>
+                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            Live Synced
+                        </span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-0.5">Manage daily passcode, display projector QR, and monitor student attendance & leaves.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+            <!-- Projector Mode Button -->
+            <button type="button" onclick="openProjectorModal()" 
+                    class="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs sm:text-sm font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex items-center gap-2 border border-indigo-400/30 hover:scale-[1.02]">
+                <i class="fa-solid fa-expand text-xs"></i>
+                <span>Projector Mode</span>
+            </button>
+
+            <!-- Export CSV Button -->
+            <a href="{{ url_for('export_csv', date=selected_date) }}"
+               class="px-4 py-2.5 bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs sm:text-sm font-semibold rounded-xl shadow-sm transition-all flex items-center gap-2 hover:border-slate-600">
+                <i class="fa-solid fa-file-csv text-emerald-400"></i>
+                <span>Export CSV</span>
+            </a>
+
+            <!-- Reset All Records Button (0) -->
+            <form action="{{ url_for('reset_attendance') }}" method="POST" onsubmit="return confirm('PERINGATAN: Adakah anda pasti mahu memadam SEMUA rekod kehadiran? Tindakan ini tidak boleh diundur dan akan mengosongkan jadual kepada 0.');">
+                <button type="submit"
+                        class="px-3.5 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 text-xs sm:text-sm font-semibold rounded-xl transition-colors flex items-center gap-2"
+                        title="Kosongkan semua rekod kepada 0">
+                    <i class="fa-solid fa-trash-can text-rose-400"></i>
+                    <span>Reset (0)</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quick Stats & Passcode Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 my-8">
+        
+        <!-- Passcode & QR Code Card -->
+        <div class="cyber-glass rounded-3xl p-6 shadow-2xl lg:col-span-2 flex flex-col justify-between relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-cyan-400 to-purple-500"></div>
+
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-2">
+                        <i class="fa-solid fa-key"></i>
+                        <span>Today's Passcode & QR Code ({{ today_date }})</span>
+                    </span>
+                    <span class="text-xs text-slate-400 font-medium">Auto-synced</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
+                    <!-- Left: Passcode display & generator -->
+                    <div class="space-y-4">
+                        <p class="text-xs text-slate-400">Kongsi kod laluan ini kepada pelajar di dalam kelas untuk pendaftaran:</p>
+                        <div class="p-5 bg-gradient-to-tr from-slate-950 via-indigo-950/80 to-slate-950 rounded-2xl text-center shadow-xl border border-indigo-500/30 text-white relative">
+                            <span class="text-[10px] uppercase tracking-widest text-indigo-300 font-bold block mb-1">TODAY'S PASSWORD</span>
+                            <div class="text-4xl sm:text-5xl font-extrabold font-mono tracking-widest text-amber-400 py-1" id="currentPasscodeText">
+                                {{ current_passcode }}
+                            </div>
+                            <span class="text-[11px] text-slate-500 block mt-1">Tarikh: {{ today_date }}</span>
+                        </div>
+
+                        <!-- Generator Actions -->
+                        <div class="space-y-2">
+                            <form action="{{ url_for('generate_passcode') }}" method="POST" class="flex gap-2">
+                                <input type="hidden" name="action" value="random">
+                                <button type="submit" 
+                                        class="flex-1 py-2.5 px-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-xs font-bold rounded-xl border border-indigo-500/30 transition-colors flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-arrows-rotate"></i>
+                                    <span>Jana Password Rawak Baru</span>
+                                </button>
+                            </form>
+
+                            <!-- Custom Passcode Input -->
+                            <form action="{{ url_for('generate_passcode') }}" method="POST" class="flex gap-2">
+                                <input type="hidden" name="action" value="custom">
+                                <input type="text" name="custom_code" required maxlength="15" placeholder="Custom pass (cth: abc88)"
+                                       class="flex-1 px-3 py-2 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono">
+                                <button type="submit" 
+                                        class="py-2 px-3.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition-colors">
+                                    Set
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Right: QR Code Preview -->
+                    <div class="flex flex-col items-center justify-center p-4 bg-slate-900/90 rounded-2xl border border-slate-800 shadow-inner text-center">
+                        <div class="p-2.5 bg-white rounded-2xl shadow-xl">
+                            <img src="{{ url_for('generate_qr_image') }}" alt="Attendance QR Code" class="w-36 h-36 object-contain rounded-lg">
+                        </div>
+                        <span class="text-xs font-bold text-slate-200 mt-2 flex items-center gap-1.5">
+                            <i class="fa-solid fa-qrcode text-indigo-400"></i> Imbas Untuk Borang
+                        </span>
+                        <span class="text-[11px] text-slate-500">Halakan kamera telefon untuk buka borang</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Summary Stats -->
+        <div class="space-y-4">
+            <!-- Total Present Today -->
+            <div class="cyber-glass rounded-3xl p-5 shadow-sm border border-emerald-500/20 flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Hadir (Hari Ini)</span>
+                    <div class="text-3xl font-extrabold text-emerald-400 mt-1">{{ total_present_today }}</div>
+                    <span class="text-[11px] text-emerald-400 font-semibold flex items-center gap-1 mt-0.5">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Pelajar Berjaya Hadir</span>
+                    </span>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-user-check"></i>
+                </div>
+            </div>
+
+            <!-- Total Absent Today -->
+            <div class="cyber-glass rounded-3xl p-5 shadow-sm border border-amber-500/20 flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Tidak Hadir (Beralasan)</span>
+                    <div class="text-3xl font-extrabold text-amber-400 mt-1">{{ total_absent_today }}</div>
+                    <span class="text-[11px] text-amber-400 font-semibold flex items-center gap-1 mt-0.5">
+                        <i class="fa-solid fa-clipboard-question"></i>
+                        <span>Hantar Sebab & Bukti</span>
+                    </span>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-user-xmark"></i>
+                </div>
+            </div>
+
+            <!-- Total Overall Records -->
+            <div class="cyber-glass rounded-3xl p-5 shadow-sm border border-indigo-500/20 flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Jumlah Rekod Database</span>
+                    <div class="text-3xl font-extrabold text-indigo-300 mt-1">{{ total_all }}</div>
+                    <span class="text-[11px] text-slate-400 font-medium flex items-center gap-1 mt-0.5">
+                        <i class="fa-solid fa-database text-cyan-400"></i>
+                        <span>Semua rekod pendaftaran</span>
+                    </span>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Table Section -->
+    <div class="cyber-glass rounded-3xl shadow-2xl overflow-hidden border border-slate-800">
+        <!-- Table Toolbar -->
+        <div class="p-5 border-b border-slate-800 bg-slate-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-table-list text-indigo-400"></i>
+                    <span>Rekod Kehadiran & Ketidakhadiran Pelajar</span>
+                </h2>
+                <p class="text-xs text-slate-400">Tapis mengikut tarikh, kelas, atau status kehadiran.</p>
+            </div>
+
+            <!-- Filter & Search Controls -->
+            <form method="GET" action="{{ url_for('admin_dashboard') }}" class="flex flex-wrap items-center gap-2">
+                <!-- Date Filter -->
+                <div>
+                    <input type="date" name="filter_date" value="{{ selected_date }}" onchange="this.form.submit()"
+                           class="px-3 py-2 text-xs bg-slate-900 border border-slate-700 rounded-xl font-medium text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                </div>
+
+                <!-- Class Filter -->
+                <div>
+                    <select name="filter_class" onchange="this.form.submit()"
+                            class="px-3 py-2 text-xs bg-slate-900 border border-slate-700 rounded-xl font-medium text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        <option value="">Semua Kelas</option>
+                        {% for cls in distinct_classes %}
+                            <option value="{{ cls['class_name'] }}" {% if selected_class == cls['class_name'] %}selected{% endif %}>
+                                {{ cls['class_name'] }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Status Filter -->
+                <div>
+                    <select name="filter_status" onchange="this.form.submit()"
+                            class="px-3 py-2 text-xs bg-slate-900 border border-slate-700 rounded-xl font-medium text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        <option value="">Semua Status</option>
+                        <option value="Present" {% if selected_status == 'Present' %}selected{% endif %}>Hadir Sahaja</option>
+                        <option value="Absent" {% if selected_status == 'Absent' %}selected{% endif %}>Tidak Hadir (Beralasan)</option>
+                    </select>
+                </div>
+
+                <!-- Instant Search Box -->
+                <div class="relative">
+                    <input type="text" id="tableSearch" placeholder="Cari nama pelajar..."
+                           class="px-3 py-2 pl-8 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    <i class="fa-solid fa-magnifying-glass text-slate-500 text-xs absolute left-3 top-3"></i>
+                </div>
+
+                {% if selected_date != today_date or selected_class or selected_status %}
+                    <a href="{{ url_for('admin_dashboard') }}" class="px-3 py-2 text-xs font-semibold text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors border border-rose-500/20">
+                        Reset Filter
+                    </a>
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse" id="attendanceTable">
+                <thead>
+                    <tr class="bg-slate-900/90 text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800">
+                        <th class="py-3.5 px-4 text-center">#</th>
+                        <th class="py-3.5 px-4 text-center">Foto</th>
+                        <th class="py-3.5 px-4">Nama Pelajar</th>
+                        <th class="py-3.5 px-4">Kelas</th>
+                        <th class="py-3.5 px-4">Semester</th>
+                        <th class="py-3.5 px-4">Masa & Tarikh</th>
+                        <th class="py-3.5 px-4">Status</th>
+                        <th class="py-3.5 px-4">Alasan / Catatan</th>
+                        <th class="py-3.5 px-4 text-center">Tindakan</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60 text-sm">
+                    {% if attendance_list %}
+                        {% for item in attendance_list %}
+                            <tr class="hover:bg-indigo-950/20 transition-colors student-row">
+                                <td class="py-3.5 px-4 text-slate-500 text-xs font-mono text-center">{{ loop.index }}</td>
+                                
+                                <!-- Student Photo Thumbnail with Safe Data Attributes -->
+                                <td class="py-3.5 px-4 text-center">
+                                    {% if item.photo %}
+                                        <button type="button" 
+                                                class="view-photo-btn w-10 h-10 rounded-xl overflow-hidden border-2 border-indigo-500/40 hover:border-cyan-400 shadow-md cursor-pointer hover:scale-110 transition-transform mx-auto block focus:outline-none"
+                                                data-photo="{{ item.photo }}"
+                                                data-name="{{ item.student_name|e }}"
+                                                data-class="{{ item.class_name|e }}"
+                                                data-status="{{ item.status|default('Present') }}"
+                                                data-date="{{ item.attendance_date }}"
+                                                data-time="{{ item.submission_time }}"
+                                                data-reason="{{ item.reason|default('', true)|e }}"
+                                                title="Klik untuk lihat foto pengesahan">
+                                            <img src="{{ item.photo }}" alt="Selfie" class="w-full h-full object-cover">
+                                        </button>
+                                    {% else %}
+                                        <div class="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-600 text-xs mx-auto" title="Tiada foto dimuat naik">
+                                            <i class="fa-solid fa-user"></i>
+                                        </div>
+                                    {% endif %}
+                                </td>
+
+                                <td class="py-3.5 px-4 font-semibold text-white student-name">
+                                    <div class="flex items-center gap-2">
+                                        <span>{{ item.student_name }}</span>
+                                    </div>
+                                </td>
+                                <td class="py-3.5 px-4 text-slate-300">
+                                    <span class="px-2.5 py-1 bg-slate-900 border border-slate-800 text-slate-300 rounded-lg text-xs font-medium">
+                                        {{ item.class_name }}
+                                    </span>
+                                </td>
+                                <td class="py-3.5 px-4 text-slate-400 text-xs">{{ item.semester }}</td>
+                                <td class="py-3.5 px-4 text-xs font-mono">
+                                    <div class="text-slate-300 font-bold">{{ item.submission_time }}</div>
+                                    <div class="text-slate-500 text-[11px]">{{ item.attendance_date }}</div>
+                                </td>
+                                <td class="py-3.5 px-4">
+                                    {% if item.status == 'Absent' %}
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                                            <i class="fa-solid fa-user-xmark text-[10px]"></i> Tidak Hadir
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                                            <i class="fa-solid fa-check text-[10px]"></i> Hadir
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3.5 px-4 text-xs">
+                                    {% if item.status == 'Absent' and item.reason %}
+                                        <span class="text-amber-300 bg-amber-950/40 border border-amber-500/30 px-3 py-1 rounded-xl block max-w-xs truncate" title="{{ item.reason }}">
+                                            {{ item.reason }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-slate-600 font-mono">-</span>
+                                    {% endif %}
+                                </td>
+
+                                <!-- Individual Delete Action Column -->
+                                <td class="py-3.5 px-4 text-center">
+                                    <form action="{{ url_for('delete_attendance', record_id=item.id) }}" method="POST" onsubmit="return confirm('Adakah anda pasti mahu memadam rekod kehadiran pelajar ini?');">
+                                        <button type="submit" 
+                                                class="p-2 text-rose-400 hover:text-rose-200 hover:bg-rose-500/20 border border-transparent hover:border-rose-500/30 rounded-xl transition-all" 
+                                                title="Padam rekod ini">
+                                            <i class="fa-solid fa-trash-can text-sm"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="9" class="py-12 text-center text-slate-500">
+                                <i class="fa-regular fa-folder-open text-3xl mb-2 block text-slate-600"></i>
+                                <p class="text-sm font-medium text-slate-400">Tiada rekod kehadiran ditemui untuk tapisan ini.</p>
+                                <p class="text-xs text-slate-500 mt-1">Pelajar boleh mengimbas Kod QR projector untuk mendaftar.</p>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Projector / Fullscreen QR Modal -->
+<div id="projectorModal" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-xl hidden flex items-center justify-center p-4">
+    <div class="cyber-glass rounded-3xl p-8 sm:p-12 max-w-2xl w-full text-center shadow-2xl relative border border-indigo-500/30">
+        <button type="button" onclick="closeProjectorModal()" class="absolute top-6 right-6 w-10 h-10 rounded-full bg-slate-900 border border-slate-700 hover:bg-slate-800 text-slate-300 flex items-center justify-center transition-colors">
+            <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+
+        <span class="inline-block px-4 py-1.5 bg-indigo-500/10 text-indigo-300 border border-indigo-500/30 rounded-full text-xs font-bold uppercase tracking-wider mb-3">
+            Sesi Imbasan Kehadiran Kuliah Aktif
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Sila Imbas Kod QR</h2>
+        <p class="text-slate-400 text-sm mt-1">Buka kamera telefon dan masukkan kod laluan harian kelas.</p>
+
+        <div class="my-6 inline-block p-4 bg-white rounded-3xl shadow-2xl shadow-indigo-500/20 border-4 border-indigo-500/30">
+            <img src="{{ url_for('generate_qr_image') }}" alt="Attendance QR Code" class="w-64 h-64 sm:w-72 sm:h-72 object-contain">
+        </div>
+
+        <div class="bg-slate-950 rounded-2xl p-6 text-white max-w-md mx-auto shadow-2xl border border-indigo-500/40">
+            <span class="text-xs uppercase tracking-widest text-indigo-400 font-bold block mb-1">PASSWORD KEHADIRAN HARI INI</span>
+            <div class="text-5xl sm:text-6xl font-extrabold font-mono tracking-widest text-amber-400">
+                {{ current_passcode }}
+            </div>
+            <span class="text-xs text-slate-500 block mt-2">Tarikh: {{ today_date }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- Photo Lightbox Viewer Modal -->
+<div id="photoViewerModal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-xl hidden flex items-center justify-center p-4">
+    <div class="cyber-glass rounded-3xl p-6 max-w-md w-full text-center shadow-2xl relative border border-indigo-500/40">
+        <button type="button" onclick="closePhotoModal()" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-900 border border-slate-700 hover:bg-slate-800 text-slate-300 flex items-center justify-center transition-colors">
+            <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+
+        <div class="flex items-center gap-2 justify-center mb-4">
+            <i class="fa-solid fa-id-card text-indigo-400 text-lg"></i>
+            <h3 class="text-lg font-bold text-white">Pengesahan Foto Pelajar</h3>
+        </div>
+
+        <div class="p-2 bg-slate-950 rounded-2xl border border-slate-800 shadow-inner mb-4 inline-block">
+            <img id="modalPhotoImg" src="" alt="Student Snapshot" class="w-72 h-72 object-cover rounded-xl mx-auto shadow-lg">
+        </div>
+
+        <div class="space-y-1.5 text-left bg-slate-900/80 p-4 rounded-2xl border border-slate-800 text-xs">
+            <div class="flex justify-between">
+                <span class="text-slate-400 font-medium">Nama Pelajar:</span>
+                <span class="text-white font-bold" id="modalStudentName"></span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-slate-400 font-medium">Kelas:</span>
+                <span class="text-indigo-300 font-bold font-mono" id="modalStudentClass"></span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-slate-400 font-medium">Masa Dihantar:</span>
+                <span class="text-slate-200 font-mono" id="modalTimestamp"></span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-slate-400 font-medium">Status:</span>
+                <span class="font-bold" id="modalStatus"></span>
+            </div>
+            <div id="modalReasonRow" class="pt-1 hidden">
+                <span class="text-slate-400 font-medium block mb-0.5">Sebab Ketidakhadiran:</span>
+                <span class="text-amber-300 bg-amber-950/40 p-2 rounded-xl block text-[11px]" id="modalReason"></span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Live Search in Table
+    const searchInput = document.getElementById('tableSearch');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function() {
+            const query = this.value.toLowerCase();
+            const rows = document.querySelectorAll('.student-row');
+            
+            rows.forEach(row => {
+                const nameText = row.querySelector('.student-name').textContent.toLowerCase();
+                if (nameText.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    // Projector Modal Controls
+    function openProjectorModal() {
+        const modal = document.getElementById('projectorModal');
+        if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeProjectorModal() {
+        const modal = document.getElementById('projectorModal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    // Photo Viewer Lightbox Modal Controls
+    function openPhotoModal(photoSrc, studentName, className, status, date, time, reason) {
+        const photoImg = document.getElementById('modalPhotoImg');
+        if (photoImg) photoImg.src = photoSrc || '';
+
+        const nameElem = document.getElementById('modalStudentName');
+        if (nameElem) nameElem.textContent = studentName || '';
+
+        const classElem = document.getElementById('modalStudentClass');
+        if (classElem) classElem.textContent = className || '';
+
+        const timeElem = document.getElementById('modalTimestamp');
+        if (timeElem) timeElem.textContent = `${time || ''} (${date || ''})`;
+        
+        const statusElem = document.getElementById('modalStatus');
+        if (statusElem) {
+            statusElem.textContent = (status === 'Absent') ? 'Tidak Hadir' : 'Hadir';
+            if (status === 'Absent') {
+                statusElem.className = 'font-bold text-amber-400';
+            } else {
+                statusElem.className = 'font-bold text-emerald-400';
+            }
+        }
+
+        const reasonRow = document.getElementById('modalReasonRow');
+        const reasonElem = document.getElementById('modalReason');
+        if (reasonRow && reasonElem) {
+            if (status === 'Absent' && reason) {
+                reasonElem.textContent = reason;
+                reasonRow.classList.remove('hidden');
+            } else {
+                reasonRow.classList.add('hidden');
+            }
+        }
+
+        const modal = document.getElementById('photoViewerModal');
+        if (modal) modal.classList.remove('hidden');
+    }
+
+    function closePhotoModal() {
+        const modal = document.getElementById('photoViewerModal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    // Event Listener for Photo Thumbnails using Safe Data Attributes
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.view-photo-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const d = this.dataset;
+                openPhotoModal(d.photo, d.name, d.class, d.status, d.date, d.time, d.reason);
+            });
+        });
+    });
+
+    // Close Modals on ESC Key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeProjectorModal();
+            closePhotoModal();
+        }
+    });
+</script>
+{% endblock %}

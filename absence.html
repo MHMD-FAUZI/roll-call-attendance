@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}RollCall - Absence Notification Form{% endblock %}
+
+{% block content %}
+<div class="flex-grow flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full">
+        
+        <!-- Header -->
+        <div class="text-center mb-6">
+            <div class="inline-flex items-center justify-center gap-3 mb-4">
+                <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-lg shadow-amber-500/10">
+                    <i class="fa-solid fa-book-medical text-xl"></i>
+                </div>
+                <div class="w-16 h-16 rounded-3xl bg-gradient-to-tr from-amber-600 via-amber-500 to-orange-400 text-white flex items-center justify-center shadow-xl shadow-amber-600/40 ring-4 ring-amber-500/20">
+                    <i class="fa-solid fa-user-xmark text-2xl"></i>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-400 shadow-lg shadow-orange-500/10">
+                    <i class="fa-solid fa-notes-medical text-xl"></i>
+                </div>
+            </div>
+
+            <h1 class="text-3xl font-extrabold text-white tracking-tight">Absence Justification</h1>
+            <p class="text-sm text-slate-400 mt-1">Submit your official reason for being absent today.</p>
+        </div>
+
+        <!-- Form Card -->
+        <div class="cyber-glass rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden border-amber-500/20">
+            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-orange-400 to-yellow-500"></div>
+
+            <form action="{{ url_for('submit_absence') }}" method="POST" class="space-y-4" id="absenceForm">
+                
+                <!-- Student Name -->
+                <div>
+                    <label for="student_name" class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-2">
+                        <i class="fa-regular fa-user text-amber-400"></i>
+                        <span>Full Name</span>
+                    </label>
+                    <input type="text" id="student_name" name="student_name" required placeholder="e.g. Muhammad Fauzi"
+                           class="w-full px-4 py-3 bg-slate-900/90 border border-slate-700/80 rounded-xl text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all shadow-inner">
+                </div>
+
+                <!-- Class & Semester Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Class -->
+                    <div>
+                        <label for="class_name" class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-2">
+                            <i class="fa-solid fa-graduation-cap text-amber-400"></i>
+                            <span>Class</span>
+                        </label>
+                        <input type="text" id="class_name" name="class_name" required placeholder="e.g. DIT4A"
+                               class="w-full px-4 py-3 bg-slate-900/90 border border-slate-700/80 rounded-xl text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all shadow-inner">
+                    </div>
+
+                    <!-- Semester -->
+                    <div>
+                        <label for="semester" class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-2">
+                            <i class="fa-solid fa-layer-group text-amber-400"></i>
+                            <span>Semester</span>
+                        </label>
+                        <select id="semester" name="semester" required
+                                class="w-full px-4 py-3 bg-slate-900/90 border border-slate-700/80 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all shadow-inner">
+                            <option value="" disabled selected class="bg-slate-900 text-slate-400">Select Semester</option>
+                            <option value="Sem 1" class="bg-slate-900">Semester 1</option>
+                            <option value="Sem 2" class="bg-slate-900">Semester 2</option>
+                            <option value="Sem 3" class="bg-slate-900">Semester 3</option>
+                            <option value="Sem 4" class="bg-slate-900">Semester 4</option>
+                            <option value="Sem 5" class="bg-slate-900">Semester 5</option>
+                            <option value="Sem 6" class="bg-slate-900">Semester 6</option>
+                            <option value="Sem 7" class="bg-slate-900">Semester 7</option>
+                            <option value="Sem 8" class="bg-slate-900">Semester 8</option>
+                            <option value="Other" class="bg-slate-900">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Date of Absence -->
+                <div>
+                    <label for="attendance_date" class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-2">
+                        <i class="fa-regular fa-calendar-days text-amber-400"></i>
+                        <span>Date of Absence</span>
+                    </label>
+                    <input type="date" id="attendance_date" name="attendance_date" value="{{ today_date }}" readonly
+                           class="w-full px-4 py-3 bg-slate-900/50 border border-slate-800 rounded-xl text-slate-400 font-mono text-sm cursor-not-allowed">
+                </div>
+
+                <!-- Reason for Absence -->
+                <div>
+                    <label for="reason" class="block text-xs font-bold uppercase tracking-wider text-amber-300 mb-1.5 flex items-center gap-2">
+                        <i class="fa-solid fa-comment-medical text-amber-400"></i>
+                        <span>Reason for Absence</span>
+                    </label>
+                    <textarea id="reason" name="reason" rows="3" required placeholder="Please describe why you cannot attend (e.g., Medical Emergency / MC / Sick / Transportation breakdown / Family emergency)..."
+                              class="w-full px-4 py-3 bg-slate-900/90 border border-slate-700/80 rounded-xl text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all shadow-inner resize-none"></textarea>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-2">
+                    <button type="submit" id="absenceSubmitBtn"
+                            class="w-full py-4 px-4 bg-gradient-to-r from-amber-600 via-amber-500 to-orange-500 hover:from-amber-500 hover:to-orange-400 text-white font-extrabold rounded-xl shadow-lg shadow-amber-600/30 hover:shadow-amber-600/50 transform hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2 border border-amber-400/30 text-sm uppercase tracking-wider">
+                        <i class="fa-solid fa-paper-plane text-sm"></i>
+                        <span>Submit Absence Justification</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="mt-6 text-center">
+            <a href="{{ url_for('index') }}" class="text-xs font-semibold text-slate-400 hover:text-indigo-400 transition-colors inline-flex items-center gap-1.5">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Back to Regular Student Attendance Form</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const form = document.getElementById('absenceForm');
+    const submitBtn = document.getElementById('absenceSubmitBtn');
+    
+    if (form && submitBtn) {
+        form.addEventListener('submit', function() {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span>Submitting Justification...</span>';
+        });
+    }
+</script>
+{% endblock %}

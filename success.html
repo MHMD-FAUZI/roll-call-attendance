@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Submission Successful - RollCall{% endblock %}
+
+{% block content %}
+<div class="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full text-center">
+        
+        <!-- Success Card -->
+        <div class="cyber-glass rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden {% if status == 'Absent' %}border-amber-500/30{% else %}border-emerald-500/30{% endif %}">
+            <!-- Glow Decor -->
+            <div class="absolute -top-24 -right-24 w-48 h-48 {% if status == 'Absent' %}bg-amber-500/20{% else %}bg-emerald-500/20{% endif %} rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl"></div>
+
+            <div class="relative z-10">
+                <!-- Status Icon -->
+                {% if status == 'Absent' %}
+                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-amber-500/10 border border-amber-500/30 text-amber-400 mb-6 shadow-xl shadow-amber-500/20 animate-bounce">
+                        <i class="fa-solid fa-file-signature text-3xl"></i>
+                    </div>
+                    <span class="inline-block px-3.5 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-full text-xs font-bold uppercase tracking-wider mb-2">
+                        Absence Recorded
+                    </span>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Reason Submitted!</h1>
+                    <p class="text-sm text-slate-400 mt-2">Your justification has been logged for instructor review.</p>
+                {% else %}
+                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 mb-6 shadow-xl shadow-emerald-500/20 animate-bounce">
+                        <i class="fa-solid fa-check-double text-3xl"></i>
+                    </div>
+                    <span class="inline-block px-3.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full text-xs font-bold uppercase tracking-wider mb-2">
+                        Verified & Logged
+                    </span>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Attendance Recorded!</h1>
+                    <p class="text-sm text-slate-400 mt-2">Thank you! Your presence has been saved in the system.</p>
+                {% endif %}
+
+                <!-- Summary Box -->
+                <div class="bg-slate-900/90 rounded-2xl p-5 my-6 text-left border border-slate-800 space-y-3 shadow-inner">
+                    <div class="flex justify-between items-center text-sm border-b border-slate-800/80 pb-2">
+                        <span class="text-slate-400 font-medium">Student Name:</span>
+                        <span class="text-white font-bold">{{ student_name }}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm border-b border-slate-800/80 pb-2">
+                        <span class="text-slate-400 font-medium">Class:</span>
+                        <span class="text-indigo-300 font-bold">{{ class_name }}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm border-b border-slate-800/80 pb-2">
+                        <span class="text-slate-400 font-medium">Semester:</span>
+                        <span class="text-white font-bold">{{ semester }}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm border-b border-slate-800/80 pb-2">
+                        <span class="text-slate-400 font-medium">Date:</span>
+                        <span class="text-white font-bold font-mono">{{ attendance_date }}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm {% if status == 'Absent' and reason %}border-b border-slate-800/80 pb-2{% endif %}">
+                        <span class="text-slate-400 font-medium">Submission Time:</span>
+                        <span class="text-cyan-400 font-bold font-mono">{{ submission_time }}</span>
+                    </div>
+                    {% if status == 'Absent' and reason %}
+                        <div class="text-sm pt-1">
+                            <span class="text-slate-400 font-medium block text-xs uppercase tracking-wider mb-1">Reason for Absence:</span>
+                            <span class="text-amber-300 bg-amber-950/50 border border-amber-500/30 p-2.5 rounded-xl block text-xs italic">{{ reason }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Return Button -->
+                <div>
+                    <a href="{{ url_for('index') }}"
+                       class="block w-full py-3.5 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2 border border-indigo-400/30 text-sm">
+                        <i class="fa-solid fa-arrow-left text-sm"></i>
+                        <span>Return to Main Page</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <p class="text-xs text-slate-500 mt-6 flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-shield-halved text-indigo-400"></i>
+            <span>RollCall Smart Academic Verification &copy; 2026</span>
+        </p>
+    </div>
+</div>
+{% endblock %}
